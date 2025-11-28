@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Juego del Patito 🦆</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#A8E6FF;
+  --bg2:#DDF7FF;
+  --accent:#00C2FF;
+  --tile1:#FDE9E0;
+  --tile2:#E8F7EA;
+  --tile3:#FFF6CC;
+  --text:#05223A;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+body{background:linear-gradient(180deg,var(--bg1),var(--bg2));overflow:hidden;display:flex;align-items:center;justify-content:center;}
+
+.sky{position:fixed;inset:0;z-index:0;background: linear-gradient(180deg,#BFEFFF 0%, #E9F9FF 60%, #FFF 100%);animation: slowShift 12s linear infinite;}
+@keyframes slowShift{0%{transform:translateY(0)}50%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+
+#wrapper{position:relative; width:100%; height:100vh; max-width:980px; margin:0 auto; z-index:1; overflow:hidden;}
+
+/* MENU */
+#menu{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:30; background: linear-gradient(180deg, rgba(5,34,58,0.18), rgba(255,255,255,0.02)); backdrop-filter: blur(6px); flex-direction:column; gap:18px;}
+#title{color:var(--text); font-size:48px; font-weight:800; text-shadow:0 6px 18px rgba(0,0,0,0.12); display:flex; align-items:center; gap:12px;}
+#subtitle{color:rgba(5,34,58,0.7); font-weight:600;}
+.levels{display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:10px;}
+.btn{background:linear-gradient(90deg,var(--accent),#76E1FF); color:#00151A; border:0; padding:14px 28px; border-radius:12px; font-size:18px; font-weight:700; box-shadow:0 8px 30px rgba(0,194,255,0.2); cursor:pointer; transition: transform .12s ease, box-shadow .12s ease;}
+.btn:hover{transform:translateY(-4px); box-shadow:0 14px 40px rgba(0,194,255,0.28);}
+
+/* HUD */
+#hud{position:absolute; top:18px; right:18px; z-index:40; display:flex; gap:12px; align-items:center;}
+#score{background:rgba(255,255,255,0.9); padding:8px 12px; border-radius:10px; font-weight:700; color:var(--text); box-shadow:0 6px 18px rgba(0,0,0,0.08);}
+#controls{background:rgba(255,255,255,0.9); padding:8px 10px; border-radius:10px; font-size:13px; color:var(--text); box-shadow:0 6px 18px rgba(0,0,0,0.06);}
+
+/* GAME AREA */
+#game{position:absolute; inset:0; z-index:10; overflow:hidden; display:none;}
+.shadow{position:absolute; width:72px; height:26px; background:rgba(0,0,0,0.25); left:50%; bottom:150px; transform:translateX(-50%); border-radius:50%; filter:blur(6px); z-index:14; transition:left .08s linear, opacity .2s;}
+.duck{position:absolute; width:70px; height:70px; left:50%; bottom:160px; transform:translateX(-50%); font-size:56px; z-index:20; display:flex; align-items:center; justify-content:center; transition:left .08s linear; will-change:transform;}
+.duck.jump{animation:duckJump 280ms cubic-bezier(.2,.9,.2,1);}
+@keyframes duckJump{0%{transform:translateX(-50%) translateY(0) scaleX(1) scaleY(1);}20%{transform:translateX(-50%) translateY(-36px) scaleX(1.05) scaleY(0.94);}60%{transform:translateX(-50%) translateY(-60px) scaleX(0.95) scaleY(1.06);}100%{transform:translateX(-50%) translateY(0) scaleX(1) scaleY(1);}}
+.duck.fall{animation:duckFall 520ms forwards cubic-bezier(.2,.0,.3,1);}
+@keyframes duckFall{0%{transform:translateX(-50%) translateY(0) scale(1);opacity:1;}70%{transform:translateX(-50%) translateY(160px) scale(.5);opacity:1;}100%{transform:translateX(-50%) translateY(230px) scale(.15);opacity:0;}}
+.pop{animation:popScale 180ms ease-out forwards;}
+@keyframes popScale{0%{transform:scale(1);}100%{transform:scale(0);opacity:0;}}
+
+/* tiles */
+.tile{position:absolute; width:260px; height:96px; left:50%; transform:translateX(-50%) rotateX(38deg); background:linear-gradient(180deg,var(--tile1),#fff); border-radius:12px; border:1px solid rgba(0,0,0,0.06); box-shadow:0 20px 40px rgba(0,0,0,0.12); transform-origin:center center; z-index:6; display:block; overflow:visible; opacity:0;}
+.tile.alt{background:linear-gradient(180deg,var(--tile2),#fff);}
+.tile.alt2{background:linear-gradient(180deg,var(--tile3),#fff);}
+.tile.enter{animation:tileIn 420ms cubic-bezier(.2,.9,.2,1) forwards;}
+@keyframes tileIn{0%{transform:translateX(-50%) translateY(18px) rotateX(38deg);opacity:0;}100%{transform:translateX(-50%) translateY(0) rotateX(38deg);opacity:1;}}
+.hole{position:absolute; width:44px; height:44px; border-radius:50%; background:#0B1220; top:26px; box-shadow:inset 0 6px 12px rgba(255,255,255,0.02);}
+
+/* overlays */
+.overlay{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:50; background: linear-gradient(180deg, rgba(5,34,58,0.14), rgba(255,255,255,0.02)); flex-direction:column; gap:14px; color:var(--text);}
+.overlay h2{font-size:34px;margin:0;}
+.overlay p{margin:0;color:rgba(5,34,58,0.7);}
+@media(max-width:520px){.tile{width:220px;height:84px;}.duck{width:58px;height:58px;font-size:46px;}.shadow{width:60px;height:22px;bottom:137px;}.duck{bottom:147px}}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<div id="wrapper">
+
+<!-- MENU CON NIVELES -->
+<div id="menu">
+  <div style="text-align:center">
+    <div id="title">🦆 JUEGO DEL PATITO</div>
+    <div id="subtitle">Salta las plataformas. Usa ← → o A D para moverte</div>
+  </div>
+  <div class="levels">
+    <button class="btn" data-level="1">Nivel 1</button>
+    <button class="btn" data-level="2">Nivel 2</button>
+    <button class="btn" data-level="3">Nivel 3</button>
+    <button class="btn" data-level="4">Nivel 4</button>
+    <button class="btn" data-level="5">Nivel 5</button>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud" style="display:none;">
+  <div id="score">Puntos: 0</div>
+  <div id="controls">Controles: ← →  •  A D</div>
+</div>
+
+<!-- GAME AREA -->
+<div id="game" aria-hidden="true">
+  <div class="shadow" id="shadow" style="left:50%"></div>
+  <div class="duck" id="duck" style="left:50%">🦆</div>
+
+  <!-- overlays -->
+  <div id="winScreen" class="overlay" style="display:none;">
+    <h2>¡GANASTE 🎉</h2>
+    <p>Completaste el nivel</p>
+    <button id="retryWin" class="btn">Jugar otra vez</button>
+  </div>
+
+  <div id="loseScreen" class="overlay" style="display:none;">
+    <h2>PERDISTE 😢</h2>
+    <p>Caíste por un hueco</p>
+    <button id="retryLose" class="btn">Reintentar</button>
+  </div>
+</div>
+</div>
+
+<script>
+(() => {
+  const menu=document.getElementById('menu');
+  const levelButtons=document.querySelectorAll('.levels .btn');
+  const hud=document.getElementById('hud');
+  const scoreEl=document.getElementById('score');
+  const game=document.getElementById('game');
+  const duck=document.getElementById('duck');
+  const shadow=document.getElementById('shadow');
+  const winScreen=document.getElementById('winScreen');
+  const loseScreen=document.getElementById('loseScreen');
+  const retryWin=document.getElementById('retryWin');
+  const retryLose=document.getElementById('retryLose');
+
+  const TOTAL_TILES=20;
+  const TILE_SPACING=130;
+  const LANDING_MIN=140;
+  const LANDING_MAX=230;
+  const DUCK_MIN_X=60;
+  let DUCK_MAX_X=window.innerWidth-60;
+  let tiles=[], speed=3, tilesPassed=0, running=false, lost=false, lastAutoJumpTile=-1;
+  let duckX=window.innerWidth/2, moveSpeed=44;
+  let currentLevel=1;
+
+  function initGame(level){
+    let levelSettings = getLevelSettings(level);
+    speed=levelSettings.speed;
+    moveSpeed=levelSettings.moveSpeed;
+    obstacleSizes=levelSettings.obstacleSize;
+    obstacleMove=levelSettings.obstacleMove;
+
+    tiles.forEach(t=>t.el.remove());
+    tiles=[];
+    tilesPassed=0; running=true; lost=false; lastAutoJumpTile=-1;
+    duckX=window.innerWidth/2;
+    DUCK_MAX_X=window.innerWidth-60;
+    duck.style.left=duckX+'px';
+    shadow.style.left=duckX+'px';
+    scoreEl.textContent='Puntos: 0';
+    winScreen.style.display='none';
+    loseScreen.style.display='none';
+    duck.classList.remove('fall','pop'); duck.style.opacity='1';
+    shadow.style.opacity='1';
+    for(let i=0;i<TOTAL_TILES;i++) createTile(i,levelSettings);
+  }
+
+  function getLevelSettings(level){
+    let settings={speed:3, moveSpeed:44, obstacleSize:44, obstacleMove:0};
+    switch(level){
+      case 1: settings={speed:2.5, moveSpeed:42, obstacleSize:30, obstacleMove:0}; break;
+      case 2: settings={speed:3, moveSpeed:44, obstacleSize:36, obstacleMove:0}; break;
+      case 3: settings={speed:3.5, moveSpeed:46, obstacleSize:36, obstacleMove:1}; break;
+      case 4: settings={speed:4, moveSpeed:48, obstacleSize:44, obstacleMove:1.5}; break;
+      case 5: settings={speed:4.5, moveSpeed:50, obstacleSize:50, obstacleMove:2}; break;
+    }
+    return settings;
+  }
+
+  let obstacleSizes=44, obstacleMove=0;
+  function createTile(index,levelSettings){
+    const el=document.createElement('div');
+    const cls=['tile','tile alt','tile alt2'][index%3];
+    el.className='tile '+cls;
+    el.style.bottom=(-index*TILE_SPACING)+'px';
+    el.style.left='50%';
+    el.style.transform='translateX(-50%) rotateX(38deg)';
+    const hole=document.createElement('div');
+    hole.className='hole';
+    hole.style.width=obstacleSizes+'px';
+    hole.style.height=obstacleSizes+'px';
+    const posIndex=Math.floor(Math.random()*3);
+    const leftArr=['30px','110px','190px'];
+    hole.style.left=leftArr[posIndex];
+    el.appendChild(hole);
+    el.classList.add('enter');
+    document.getElementById('wrapper').appendChild(el);
+    tiles.push({el,hole,posIndex,index,moveDir:Math.random()<0.5?1:-1});
+  }
+
+  function update(){
+    if(!running||lost) return;
+    for(let i=0;i<tiles.length;i++){
+      const t=tiles[i];
+      let y=parseFloat(t.el.style.bottom||0);
+      y+=speed;
+      t.el.style.bottom=y+'px';
+      // mueve obstáculos si tienen move
+      if(obstacleMove>0){
+        let left=parseFloat(t.hole.style.left);
+        left+=t.moveDir*obstacleMove;
+        if(left<8||left>200) t.moveDir*=-1;
+        t.hole.style.left=left+'px';
+      }
+      if(y>LANDING_MIN && y<LANDING_MAX){
+        const holeRect=t.hole.getBoundingClientRect();
+        const duckRect=duck.getBoundingClientRect();
+        const holeCenterX=holeRect.left+holeRect.width/2;
+        const duckCenterX=duckRect.left+duckRect.width/2;
+        if(Math.abs(duckCenterX-holeCenterX)>holeRect.width/2+4){
+          if(lastAutoJumpTile!==i){triggerAutoJump(i); lastAutoJumpTile=i;}
+        } else if(!lost){lose(); return;}
+      }
+      if(y>window.innerHeight*0.7){
+        tilesPassed++; scoreEl.textContent='Puntos: '+tilesPassed;
+        t.el.style.bottom=-(TILE_SPACING*(TOTAL_TILES+Math.floor(Math.random()*4)))+'px';
+        const posIndex=Math.floor(Math.random()*3);
+        t.hole.style.left=['30px','110px','190px'][posIndex];
+        t.posIndex=posIndex;
+        t.el.classList.remove('enter'); void t.el.offsetWidth; t.el.classList.add('enter');
+        speed+=0.04;
+      }
+    }
+    if(tilesPassed>=TOTAL_TILES){win();return;}
+    requestAnimationFrame(update);
+  }
+
+  function triggerAutoJump(){duck.classList.remove('jump'); void duck.offsetWidth; duck.classList.add('jump'); shadow.style.transform='translateX(-50%) scale(0.85)'; setTimeout(()=>shadow.style.transform='translateX(-50%) scale(1)',240);}
+
+  function lose(){lost=true; running=false; duck.classList.remove('jump'); void duck.offsetWidth; duck.classList.add('fall'); shadow.style.transition='opacity .4s'; shadow.style.opacity='0'; setTimeout(()=>loseScreen.style.display='flex',420);}
+  function win(){running=false; setTimeout(()=>winScreen.style.display='flex',200);}
+  function restart(){tiles.forEach(t=>t.el.remove()); tiles=[]; initGame(currentLevel); hud.style.display='flex'; game.style.display='block'; requestAnimationFrame(update);}
+
+  levelButtons.forEach(btn=>btn.addEventListener('click',()=>{
+    currentLevel=parseInt(btn.dataset.level);
+    menu.style.display='none';
+    hud.style.display='flex';
+    game.style.display='block';
+    initGame(currentLevel);
+    requestAnimationFrame(update);
+  }));
+
+  retryWin.addEventListener('click',()=>{winScreen.style.display='none'; restart();});
+  retryLose.addEventListener('click',()=>{loseScreen.style.display='none'; restart();});
+
+  window.addEventListener('keydown',(e)=>{
+    if(lost||!running) return;
+    const k=e.key.toLowerCase();
+    if(k==='arrowleft'||k==='a'){duckX-=moveSpeed;if(duckX<DUCK_MIN_X) duckX=DUCK_MIN_X; duck.style.left=duckX+'px'; shadow.style.left=duckX+'px';duck.classList.remove('jump');void duck.offsetWidth;duck.classList.add('jump');}
+    if(k==='arrowright'||k==='d'){duckX+=moveSpeed;if(duckX>DUCK_MAX_X) duckX=DUCK_MAX_X; duck.style.left=duckX+'px'; shadow.style.left=duckX+'px';duck.classList.remove('jump');void duck.offsetWidth;duck.classList.add('jump');}
+  });
+
+  window.addEventListener('resize',()=>{DUCK_MAX_X=window.innerWidth-60;});
+
+})();
+</script>
+</body>
+</html>
