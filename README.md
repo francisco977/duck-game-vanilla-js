@@ -1,60 +1,72 @@
 # 🦆 Duck Game
 
-Mini juego desarrollado con JavaScript puro (Vanilla JS), HTML y CSS.  
-El jugador controla un pato que puede moverse horizontalmente y esquivar obstáculos.
+Este proyecto forma parte de mi proceso de aprendizaje en JavaScript y desarrollo frontend.
+
+La idea no fue simplemente crear un juego, sino utilizarlo como laboratorio práctico para entender conceptos fundamentales como estado, movimiento, renderizado y detección de colisiones.
 
 ---
 
-## 🎮 Características
+## 🎯 Objetivo
 
-- Movimiento horizontal controlado por teclado
-- Sistema de niveles con aumento progresivo de dificultad
-- Detección de colisiones
-- Animaciones con CSS (salto y caída)
-- Game loop usando `requestAnimationFrame`
-- Control de límites de pantalla
+Usar un juego simple como excusa para practicar y reforzar:
+
+- Manejo de variables como estado del sistema
+- Movimiento en el eje horizontal
+- Lógica de dirección (`+=`, `-=`)
+- Límites dinámicos usando `window.innerWidth`
+- Animaciones con CSS
+- Game loop con `requestAnimationFrame`
+- Detección básica de colisiones
+- Sistema de niveles configurable
+
+Este proyecto fue evolucionando a medida que iba comprendiendo mejor cada concepto.
 
 ---
 
-## 🛠️ Tecnologías utilizadas
+## 🧠 Qué estoy aprendiendo aquí
+
+En este repositorio practico principalmente:
+
+1. Separación entre lógica y renderizado.
+2. Cómo una variable representa la posición real de un elemento.
+3. Cómo el navegador interpreta `left` y `transform`.
+4. Cómo evitar que un elemento se salga del viewport.
+5. Cómo estructurar pequeños motores de juego.
+
+No todos los sistemas están optimizados ni completamente refactorizados,
+porque el foco es el aprendizaje progresivo.
+
+---
+
+## 🛠️ Tecnologías usadas
 
 - HTML5
-- CSS3 (animaciones, position, transform)
-- JavaScript (DOM manipulation, game loop, lógica de movimiento)
-
----
-
-## 🧠 Conceptos aplicados
-
-Este proyecto fue desarrollado para reforzar conceptos fundamentales de frontend:
-
-- Manejo de estado con variables (posición y velocidad)
-- Manipulación dinámica del DOM
-- Uso de `requestAnimationFrame` para animaciones fluidas
-- Cálculo de límites usando `window.innerWidth`
-- Sistema de niveles con configuración dinámica
-- Detección básica de colisiones
-
----
-
-## ⚙️ Cómo funciona el movimiento
-
-La posición horizontal del pato se guarda en una variable (`duckX`).  
-En cada frame:
-
-1. Se actualiza la posición según la velocidad.
-2. Se valida que no se salga de la pantalla.
-3. Se renderiza la nueva posición en el DOM.
-
-Esto sigue la estructura clásica de un game loop:
-
-- Update (lógica)
-- Render (visualización)
+- CSS3 (position, transform, animaciones)
+- JavaScript Vanilla (sin frameworks)
 
 ---
 
 ## 🚀 Cómo ejecutarlo
 
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/tuusuario/duck-game.git
+1. Clonar el repositorio
+2. Abrir `index.html` en el navegador
+
+No requiere instalación adicional.
+
+---
+
+## 📈 Próximos pasos
+
+- Mejorar sistema de colisiones
+- Modularizar código
+- Agregar sistema de puntuación
+- Refactorizar lógica de niveles
+- Implementar guardado de récord
+
+---
+
+## 📌 Nota personal
+
+Este proyecto representa mi proceso de aprendizaje activo.
+
+Mi objetivo no es solo que funcione, sino entender cada parte del sistema y poder modificarla por mi cuenta.
